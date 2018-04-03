@@ -1,6 +1,3 @@
----
-output: html_notebook
----
 # Tutorial: Access Distributed NASA Earth Science Data from OPeNDAP Services using R
 ## Access time series of maximum temperature at an AmeriFlux site location
 *Author: ORNL DAAC*
@@ -19,16 +16,15 @@ Spatial subsets of daily maximum temperature data for North America in 1990 from
 Spatial subsets of 30-year(1961-1990) mean monthly surface climat over global land areas, excluding Antarctica. In this example, monthly maimum temperature climatology data is obtained from [this ORNL DAAC's THREDDS server.](https://thredds.daac.ornl.gov/thredds/catalog/ornldaac/542/catalog.html?dataset=542/climate6190_TMX.nc4) 
 
 ## Prerequisites:
-R v3.3 or later. R packages: `ncdf4`
+R v3.3 or later. R package: `ncdf4`
 
 ## Procedure
 
-### 1. Load R packages: ncdf4
+### 1. Load R package: ncdf4
 Let's import all the libraries that we will need. Run the following cells
 
 ```{r}
 library("ncdf4")           #package for netcdf manipulation
-
 ```
 
 ### 2. Define coordinates of point of interest: Ameriflux site (Sky Oaks Old / US-SO2)
@@ -63,12 +59,13 @@ climatology_data
 Now we are going to calculate the indices of our point of interest along X and Y dimension for each dataset.
 
 #### 4.1. Daily Daymet data
-***This step may take several minutes because of big volume of data***
+retrieve latitudes and longitudes. ***This step may take several minutes because of big volume of data***
 ```{r}
-#retrieve latitudes and longitudes
 daymet_lats = ncvar_get(daymet_data, "lat")
 daymet_lons = ncvar_get(daymet_data, "lon")
-#calculate which grid cell contains the point of interest 
+```
+calculate which grid cell contains the point of interest 
+```{r}
 daymet_dist = sqrt((daymet_lats - mylat)^2 + (daymet_lons - mylon)^2)
 daymet_inds = which(daymet_dist == min(daymet_dist), arr.ind = TRUE)
 daymet_x = daymet_inds[,1]
@@ -77,11 +74,13 @@ sprintf("Daymet: x=%d, y=%d", daymet_x, daymet_y)
 ```
 
 #### 4.2. Monthly Climatology data 
+retrieve latitudes and longitudes
 ```{r}
-#retrieve latitudes and longitudes
 climatology_lats = ncvar_get(climatology_data, "lat")
 climatology_lons = ncvar_get(climatology_data, "lon")
-#calculate which grid cell contains the point of interest 
+```
+calculate which grid cell contains the point of interest 
+```{r}
 climatology_x = which.min(abs(climatology_lons - mylon))
 climatology_y = which.min(abs(climatology_lats - mylat))
 sprintf("Climatology: x=%d, y=%d", climatology_x, climatology_y)
@@ -91,42 +90,61 @@ sprintf("Climatology: x=%d, y=%d", climatology_x, climatology_y)
 In this step, we will show how to access the actual value of mexmimum temperature variable in both datasets. The indices from last step are used to retrieve maximum temperature at the point of interest for entire year.
 
 #### Step 5.1. Daily Daymet data 
+create the vector of indices indicating where to start reading data. Order is (X,Y,time)
 ```{r}
-#create the vector of indices indicating where to start reading data. Order is (X,Y,time)
 start = c(daymet_x, daymet_y, 1)
-#create vector of integers indicating the count of values to read along each dimension. (Order is (X,Y,time)
+```
+create vector of integers indicating the count of values to read along each dimension. (Order is (X,Y,time)
+```{r}
 count = c(1, 1, 365)
-#read data at point of interest from the first day of year to the end of year
+```
+read data at point of interest from the first day of year to the end of year
+```{r}
 daymet_tmax = ncvar_get(daymet_data, "tmax", start=start, count=count)
 daymet_tmax
 ```
 
 #### 5.2. Monthly Climatology data 
+create the vector of indices indicating where to start reading data. Order is (X,Y,time)
 ```{r}
-#create the vector of indices indicating where to start reading data. Order is (X,Y,time)
 start = c(climatology_x, climatology_y, 1)
-#create vector of integers indicating the count of values to read along each dimension. (Order is (X,Y,time)
+```
+create vector of integers indicating the count of values to read along each dimension. (Order is (X,Y,time)
+```{r}
 count = c(1, 1, 12)
-#read data at point of interest from the first month of year to the last month of year
+```
+read data at point of interest from the first month of year to the last month of year
+```{r}
 climatology_tmax = ncvar_get(climatology_data, "TMX", start=start, count=count)
 climatology_tmax
 ```
 
 ### Step 6. Make a simple plot of data 
 Generate one plot of maximum temperature values in both daily Daymet dataset and monthly climatology dataset. X axis of the plot represents time and the unit is day. Y axis of the plot represents maximum temperature, and the unit is degree C.
+
+create sequence along time axis for daily daymet data
 ```{r}
-#create sequence along time axis for daily daymet data
 daymet_time = seq(1, 365, 1)
-#create sequence along time axis for monthly climatology data
+```
+create sequence along time axis for monthly climatology data
+```{r}
 climatology_time = seq(15, 350, 30)
-#plotting X axis and Y axis 
+```
+plotting X axis and Y axis 
+```{r}
 plot(0, 0, xlim = c(1,365), ylim = c(min(daymet_tmax), max(daymet_tmax)), type = "n",xlab="Degree C",ylab="Day")
-#plotting maximum temperature of daily Daymet dataset 
+```
+plotting maximum temperature of daily Daymet dataset 
+```{r}
 lines(daymet_time, daymet_tmax, type="l", col="red")
-#plotting maximum temperature of monthly climatology dataset
+```
+plotting maximum temperature of monthly climatology dataset
+```{r}
 lines(climatology_time, climatology_tmax, type="b", col="blue")
-#add title and legend
+```
+add title and legend
+```{r}
 title("Maximum Temperature")
 legend(0,35, legend=c("Monthly Climatology","Daily Daymet"),pch=c(19,NA),lty=c(1,1),lwd=c(1.5,1.5),col=c("blue","red"),bty="n")
-
 ```
+![](opendap_r.png)
