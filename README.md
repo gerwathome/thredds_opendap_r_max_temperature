@@ -19,5 +19,4 @@ Spatial subsets of 30-year(1961-1990) mean monthly surface climat over global la
 R v3.3 or later. R package: `ncdf4`
 
 ## Procedure
-Access the tutorial here:  
-[Tutorial](opendap_r_v1.Rmd)
+Access the tutorial here:  [Tutorial](opendap_r_v1.Rmd)
