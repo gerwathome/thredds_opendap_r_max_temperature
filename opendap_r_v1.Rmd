@@ -132,7 +132,7 @@ climatology_time = seq(15, 350, 30)
 ```
 plotting X axis and Y axis 
 ```{r}
-plot(0, 0, xlim = c(1,365), ylim = c(min(daymet_tmax), max(daymet_tmax)), type = "n",xlab="Degree C",ylab="Day")
+plot(0, 0, xlim = c(1,365), ylim = c(min(daymet_tmax), max(daymet_tmax)), type = "n",xlab="Day",ylab="Degree C")
 ```
 plotting maximum temperature of daily Daymet dataset 
 ```{r}
